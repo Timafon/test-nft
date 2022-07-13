@@ -1,6 +1,7 @@
 import React from 'react'
 import CssBaseline from '@mui/material/CssBaseline';
 import {
+    CircularProgress,
     Container,
     FormControl, FormHelperText,
     IconButton,
@@ -77,7 +78,8 @@ function App() {
   const [addr, setAddr] = React.useState('');
   const [validAddr, setValidAddr] = React.useState(true);
   const [pics, setPics] = React.useState(null);
-  const [picsErr, setPicsErr] = React.useState(null)
+  const [picsErr, setPicsErr] = React.useState(null);
+  const [loading, setLoading] = React.useState(null);
   const handleChange = (e) => {
       const value = e.target.value
 
@@ -92,6 +94,8 @@ function App() {
       }
   }
   const handleGetPics = () => {
+      setLoading(true)
+
       API.getAssets({ owner: addr })
           .then(({ data }) => {
               let items = []
@@ -110,6 +114,9 @@ function App() {
           .catch(err => {
               console.log('err: ', err)
               setPicsErr(err.message)
+          })
+          .finally(() => {
+              setLoading(false)
           })
   }
   const keyPress = (e) => {
@@ -153,22 +160,28 @@ function App() {
                   </SearchField>
                   {pics !== null && (
                       <>
-                          {pics.length > 1 ? (
-                              <PicsWrap>
-                                {pics.map((pic) => {
-                                    return (
-                                        <PicBox>
-                                            <Img
-                                                src={pic.image_url}
-                                                alt={pic.name}
-                                            />
-                                        </PicBox>
-                                    )
-                                })}
-                              </PicsWrap>
-                          ) : (
+                          {
+                              loading ? <CircularProgress /> : (
                                   <>
-                                    <Typography variant={'h2'}>There is nothing!</Typography>
+                                      {pics.length > 1 ? (
+                                          <PicsWrap>
+                                              {pics.map((pic) => {
+                                                  return (
+                                                      <PicBox>
+                                                          <Img
+                                                              src={pic.image_url}
+                                                              alt={pic.name}
+                                                          />
+                                                      </PicBox>
+                                                  )
+                                              })}
+                                          </PicsWrap>
+                                      ) : (
+                                          <>
+                                              <Typography variant={'h2'}>There is nothing!</Typography>
+                                          </>
+                                      )
+                                      }
                                   </>
                               )
                           }
